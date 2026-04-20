@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}TaskFlow - Nueva Categoría{% endblock %}
+{% block page_title %}Nueva Categoría{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="form-card card p-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:48px;height:48px;background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                        <i class="bi bi-tag text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Nueva Categoría</h5>
+                        <small class="text-muted">Organiza tus tareas</small>
+                    </div>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Nombre <span class="text-danger">*</span></label>
+                        {{ form.name }}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">Color</label>
+                        {{ form.color }}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-check-lg me-2"></i>Crear
+                        </button>
+                        <a href="{% url 'category_list' %}" class="btn btn-outline-secondary flex-fill">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

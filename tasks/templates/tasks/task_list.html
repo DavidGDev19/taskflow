@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}TaskFlow - Mis Tareas{% endblock %}
+{% block page_title %}Dashboard de Tareas{% endblock %}
+
+{% block content %}
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-white opacity-75 mb-1 small">Total Tareas</p>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.total }}</h2>
+                </div>
+                <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                    <i class="bi bi-list-task text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-white opacity-75 mb-1 small">Pendientes</p>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.pending }}</h2>
+                </div>
+                <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                    <i class="bi bi-clock text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-white opacity-75 mb-1 small">En Progreso</p>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.in_progress }}</h2>
+                </div>
+                <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                    <i class="bi bi-arrow-repeat text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <p class="text-white opacity-75 mb-1 small">Completadas</p>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.completed }}</h2>
+                </div>
+                <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                    <i class="bi bi-check-circle text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters & Search -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-12 col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text border-0 bg-light"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-0 bg-light" placeholder="Buscar tarea..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">Estado</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>En Progreso</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completada</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <select name="priority" class="form-select form-select-sm">
+                    <option value="">Prioridad</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>Alta</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Media</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Baja</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">Categoría</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_filter == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill">Filtrar</button>
+                <a href="{% url 'task_list' %}" class="btn btn-outline-secondary btn-sm flex-fill">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tasks List -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="fw-semibold mb-0">
+        <i class="bi bi-journal-check me-2 text-primary"></i>
+        Tareas ({{ tasks|length }})
+    </h6>
+    <a href="{% url 'task_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i> Nueva Tarea
+    </a>
+</div>
+
+{% if tasks %}
+<div class="row g-3">
+    {% for task in tasks %}
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="task-card priority-{{ task.priority }} p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-semibold mb-0 {% if task.status == 'completed' %}text-decoration-line-through text-muted{% endif %}">
+                    {{ task.title }}
+                </h6>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'task_edit' task.pk %}"><i class="bi bi-pencil me-2"></i>Editar</a></li>
+                        <li><a class="dropdown-item" href="{% url 'task_toggle' task.pk %}"><i class="bi bi-arrow-repeat me-2"></i>Cambiar estado</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'task_delete' task.pk %}"><i class="bi bi-trash me-2"></i>Eliminar</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            {% if task.description %}
+            <p class="text-muted small mb-2">{{ task.description|truncatechars:80 }}</p>
+            {% endif %}
+
+            <div class="d-flex flex-wrap gap-1 mb-2">
+                <span class="badge badge-pill bg-{{ task.status_badge_class }} bg-opacity-10 text-{{ task.status_badge_class }} border border-{{ task.status_badge_class }}">
+                    {{ task.get_status_display }}
+                </span>
+                <span class="badge badge-pill bg-{{ task.priority_badge_class }} bg-opacity-10 text-{{ task.priority_badge_class }} border border-{{ task.priority_badge_class }}">
+                    {{ task.get_priority_display }}
+                </span>
+                {% if task.category %}
+                <span class="badge badge-pill" style="background-color: {{ task.category.color }}20; color: {{ task.category.color }}; border: 1px solid {{ task.category.color }}">
+                    {{ task.category.name }}
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-auto">
+                <small class="text-muted">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    {% if task.due_date %}{{ task.due_date }}{% else %}Sin fecha límite{% endif %}
+                </small>
+                <a href="{% url 'task_toggle' task.pk %}" class="btn btn-sm btn-light" title="Cambiar estado">
+                    <i class="bi bi-arrow-repeat"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="text-center py-5">
+    <div class="mb-3">
+        <i class="bi bi-inbox display-1 text-muted opacity-50"></i>
+    </div>
+    <h5 class="text-muted">No hay tareas</h5>
+    <p class="text-muted">
+        {% if search_query or status_filter or priority_filter %}
+            No se encontraron tareas con los filtros aplicados.
+        {% else %}
+            ¡Crea tu primera tarea para comenzar!
+        {% endif %}
+    </p>
+    <a href="{% url 'task_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-2"></i>Crear Tarea
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

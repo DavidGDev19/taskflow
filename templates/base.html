@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TaskFlow{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #f1f5f9;
+            --sidebar-width: 250px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-brand h4 {
+            color: #fff;
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .sidebar-brand span {
+            color: #a5b4fc;
+            font-size: 0.75rem;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.7);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            margin: 2px 12px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Cards */
+        .stat-card {
+            border: none;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover { transform: translateY(-3px); }
+
+        .stat-card .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        /* Task Card */
+        .task-card {
+            border: none;
+            border-radius: 12px;
+            border-left: 4px solid transparent;
+            transition: all 0.2s;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .task-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
+        }
+
+        .task-card.priority-high { border-left-color: #ef4444; }
+        .task-card.priority-medium { border-left-color: #f59e0b; }
+        .task-card.priority-low { border-left-color: #22c55e; }
+
+        /* Badges */
+        .badge-pill { border-radius: 50px; padding: 0.35em 0.8em; font-weight: 500; }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        /* Search bar */
+        .search-bar {
+            border-radius: 50px;
+            border: 2px solid #e2e8f0;
+            padding: 0.5rem 1rem;
+        }
+        .search-bar:focus { border-color: var(--primary); box-shadow: none; }
+
+        /* Form */
+        .form-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <div class="sidebar-brand">
+        <h4><i class="bi bi-check2-circle me-2" style="color:#a5b4fc"></i>TaskFlow</h4>
+        <span>Gestión de Tareas</span>
+    </div>
+    <div class="py-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'task_list' %}active{% endif %}" href="{% url 'task_list' %}">
+                    <i class="bi bi-house"></i> Inicio
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'task_create' %}active{% endif %}" href="{% url 'task_create' %}">
+                    <i class="bi bi-plus-circle"></i> Nueva Tarea
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'category' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'category_list' %}">
+                    <i class="bi bi-tag"></i> Categorías
+                </a>
+            </li>
+        </ul>
+        <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 1.5rem;">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">
+                    <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm d-md-none" id="sidebarToggle">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <h6 class="mb-0 fw-semibold text-muted">{% block page_title %}Dashboard{% endblock %}</h6>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+                     style="width:36px;height:36px;font-size:0.9rem;">
+                    {{ user.username|first|upper }}
+                </div>
+                <span class="fw-medium">{{ user.username }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="px-4 pt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Page Content -->
+    <div class="p-4">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+{% else %}
+<div class="container">
+    {% block auth_content %}{% endblock %}
+</div>
+{% endif %}
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sidebar toggle for mobile
+    document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('show');
+    });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
